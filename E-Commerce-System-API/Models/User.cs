@@ -22,8 +22,10 @@ namespace E_Commerce_System_API.Models
         public string Phone { get; set; }
         [Required(ErrorMessage = "Role is required.")]
         public string Role { get; set; }
-
-        [Required]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        // Navigation properties
+        public ICollection<Order> Orders { get; set; } = new List<Order>();
+        public ICollection<Review> Reviews { get; set; } = new List<Review>();
     }
 }
