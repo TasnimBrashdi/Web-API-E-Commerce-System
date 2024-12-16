@@ -18,7 +18,11 @@ namespace E_Commerce_System_API.Models
         [Range(0, int.MaxValue, ErrorMessage = "Stock must be a non-negative integer.")]
         public int Stock { get; set; }
 
-        public decimal Overall_Rating { get; set; } 
+        public decimal Overall_Rating { get; set; }
+
+        // Navigation properties
+        public ICollection<Review> Reviews { get; set; } = new List<Review>();
+        public ICollection<OrderProducts> OrderProduct { get; set; } = new List<OrderProducts>();
 
     }
 }
