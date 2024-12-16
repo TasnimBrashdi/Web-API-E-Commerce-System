@@ -15,7 +15,9 @@ namespace E_Commerce_System_API.Models
 
         public DateTime OrderDate { get; set; } = DateTime.UtcNow;
 
-        public decimal TotalAmount { get; set; }    
+        public decimal TotalAmount { get; set; }
+
+        public ICollection<OrderProducts> OrderProduct { get; set; } = new List<OrderProducts>();
 
 
     }
