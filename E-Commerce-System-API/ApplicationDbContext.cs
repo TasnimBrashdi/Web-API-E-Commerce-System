@@ -31,6 +31,10 @@ namespace E_Commerce_System_API
                 .WithMany(p => p.OrderProduct)
                 .HasForeignKey(op => op.ProductId);
         }
-
+        public DbSet<User> Users { get; set; }
+        public DbSet<Product> Products { get; set; }
+        public DbSet<Order> Orders { get; set; }
+        public DbSet<OrderProducts> OrderProducts { get; set; }
+        public DbSet<Review> Reviews { get; set; }
     }
 }
