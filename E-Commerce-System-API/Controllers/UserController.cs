@@ -9,6 +9,7 @@ using System.Text;
 
 namespace E_Commerce_System_API.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[Controller]")]
     public class UserController : ControllerBase
