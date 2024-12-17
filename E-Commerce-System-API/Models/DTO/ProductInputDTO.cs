@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace E_Commerce_System_API.Models
+namespace E_Commerce_System_API.Models.DTO
 {
     public class ProductInputDTO
     {

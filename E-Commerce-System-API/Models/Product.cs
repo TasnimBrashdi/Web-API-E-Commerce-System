@@ -25,4 +25,7 @@ namespace E_Commerce_System_API.Models
         public ICollection<OrderProducts> OrderProduct { get; set; } = new List<OrderProducts>();
 
     }
+
+   
+  
 }
