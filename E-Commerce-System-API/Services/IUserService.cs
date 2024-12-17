@@ -8,6 +8,6 @@ namespace E_Commerce_System_API.Services
         User GetById(int id);
         User Login(string email, string password);
         void Register(User user);
-        void UpdateUser(User user, int id);
+        void UpdateUser( int id, User user);
     }
 }

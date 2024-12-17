@@ -53,7 +53,7 @@ namespace E_Commerce_System_API.Services
 
             return user;
         }
-        public void UpdateUser(User user, int id)
+        public void UpdateUser(int id, User user)
         {
             var existingUser = _userrepo.GetById(id);
             if (existingUser == null)
@@ -64,6 +64,7 @@ namespace E_Commerce_System_API.Services
             // Update fields
             existingUser.Name = user.Name;
             existingUser.Email = user.Email;
+            existingUser.Phone = user.Phone;
 
             // If password is provided, hash it before updating
             if (!string.IsNullOrEmpty(user.Password))
