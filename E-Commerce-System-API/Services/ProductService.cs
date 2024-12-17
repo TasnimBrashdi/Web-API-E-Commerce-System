@@ -13,9 +13,28 @@ namespace E_Commerce_System_API.Services
             _productrepo = productrepo;
         }
 
-        public void AddProduct(Product product)
+        public ProductOutputDTO AddProduct(ProductInputDTO inputDto)
         {
+            var product = new Product
+            {
+                Name = inputDto.Name,
+                Price = inputDto.Price,
+                Description = inputDto.Description,
+                Stock = inputDto.Stock,
+
+
+
+            };
+
             _productrepo.AddProduct(product);
+
+
+            return new ProductOutputDTO
+            {
+                Name = product.Name,
+
+
+            };
         }
         public void UpdateProduct(int id, Product updatedProduct)
         {

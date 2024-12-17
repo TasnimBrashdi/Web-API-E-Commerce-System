@@ -4,7 +4,7 @@ namespace E_Commerce_System_API.Services
 {
     public interface IProductService
     {
-        void AddProduct(Product product);
+        ProductOutputDTO AddProduct(ProductInputDTO inputDto);
         List<Product> GetAllProducts();
         Product GetProductById(int id);
         List<Product> GetProductsByName(string name);
