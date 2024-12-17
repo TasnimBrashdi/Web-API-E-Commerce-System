@@ -2,10 +2,11 @@
 using E_Commerce_System_API.Repositories;
 using System.Security.Cryptography;
 using System.Text;
+using static E_Commerce_System_API.Models.UserInput;
 
 namespace E_Commerce_System_API.Services
 {
-    public class UserService : IUserService
+    public class UserService: IUserService
     {
         private readonly IUserRepo _userrepo;
 
@@ -15,19 +16,45 @@ namespace E_Commerce_System_API.Services
         }
 
 
-        public void Register(User user)
+        public void Register(UserInput userInput)
         {
-            // Hash the password before storing it
-            user.Password = HashPassword(user.Password);
+          
+            var user = new User
+            {
+                Name = userInput.Name,
+                Email = userInput.Email,
+                Password = HashPassword(userInput.Password),  // Hash the password before storing it
+                Phone = userInput.Phone,
+                Role = userInput.Role
+            };
             _userrepo.AddUser(user);
-        }
 
-        public User Login(string email, string password)
+          
+        }
+        private UserOutput MapToOutputModel(User user) { 
+        
+            return new UserOutput
+            {
+                UId = user.UId,
+                Name = user.Name,
+                Email = user.Email,
+                Phone = user.Phone,
+                Role = user.Role,
+                CreatedAt = user.CreatedAt
+            };
+        }
+        public UserOutput Login(string email, string password)
         {
             // Hash the input password and compare it with the stored hash
             string hashedPassword = HashPassword(password);
-            return _userrepo.GetUser(email, hashedPassword);
+            var user = _userrepo.GetUser(email, hashedPassword);
 
+            if (user == null)
+            {
+                throw new Exception("Invalid email or password.");
+            }
+
+            return MapToOutputModel(user);
         }
         private string HashPassword(string password)
         {
@@ -43,7 +70,7 @@ namespace E_Commerce_System_API.Services
             }
         }
 
-        public User GetById(int id)
+        public UserOutput GetById(int id)
         {
             var user = _userrepo.GetById(id);
             if (user == null)
@@ -51,9 +78,9 @@ namespace E_Commerce_System_API.Services
                 throw new Exception("User not found.");
             }
 
-            return user;
+            return MapToOutputModel(user);
         }
-        public void UpdateUser(int id, User user)
+        public void UpdateUser(int id, UserInput user)
         {
             var existingUser = _userrepo.GetById(id);
             if (existingUser == null)
