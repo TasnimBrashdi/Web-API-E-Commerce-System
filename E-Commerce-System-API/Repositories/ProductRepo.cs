@@ -63,7 +63,32 @@ namespace E_Commerce_System_API.Repositories
                 _context.SaveChanges();
             }
         }
+        //retrieving products with pagination and filtering
+        public List<Product> GetProducts(string name, decimal? minPrice, decimal? maxPrice, int pageNumber, int pageSize)
+        {
+            var query = _context.Products.AsQueryable();
 
+            // Filter by name if provided
+            if (!string.IsNullOrEmpty(name))
+            {
+                query = query.Where(p => p.Name.Contains(name));
+            }
 
+            // Filter by price range if provided
+            if (minPrice.HasValue)
+            {
+                query = query.Where(p => p.Price >= minPrice.Value);
+            }
+            if (maxPrice.HasValue)
+            {
+                query = query.Where(p => p.Price <= maxPrice.Value);
+            }
+
+            // Apply pagination
+            return query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+        }
     }
 }

@@ -10,5 +10,6 @@ namespace E_Commerce_System_API.Repositories
         Product GetProductById(int id);
         List<Product> GetProductsByName(string name);
         void UpdateProduct(Product updatedProduct);
+        List<Product> GetProducts(string name, decimal? minPrice, decimal? maxPrice, int pageNumber, int pageSize);
     }
 }
