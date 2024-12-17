@@ -9,6 +9,6 @@ namespace E_Commerce_System_API.Services
         Product GetProductById(int id);
         List<Product> GetProductsByName(string name);
         void RemoveProduct(int ID);
-        void UpdateProduct(int id, Product updatedProduct);
+        ProductOutputDTO UpdateProduct(int id, ProductInputDTO inputDto);
     }
 }

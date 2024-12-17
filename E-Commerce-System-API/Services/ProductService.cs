@@ -36,24 +36,31 @@ namespace E_Commerce_System_API.Services
 
             };
         }
-        public void UpdateProduct(int id, Product updatedProduct)
+        public ProductOutputDTO UpdateProduct(int id, ProductInputDTO inputDto)
         {
-            // Retrieve the existing product by ID
             var existingProduct = _productrepo.GetProductById(id);
             if (existingProduct == null)
             {
-                throw new Exception("Product not found.");
+                throw new KeyNotFoundException("Product not found.");
             }
 
-            // Update fields
-            existingProduct.Name = updatedProduct.Name;
-            existingProduct.Description = updatedProduct.Description;
-            existingProduct.Price = updatedProduct.Price;
-            existingProduct.Stock = updatedProduct.Stock;
-
+            existingProduct.Name = inputDto.Name;
+            existingProduct.Description = inputDto.Description;
+            existingProduct.Price = inputDto.Price;
+            existingProduct.Stock = inputDto.Stock;
 
             _productrepo.UpdateProduct(existingProduct);
+
+            return new ProductOutputDTO
+            {
+
+                Name = existingProduct.Name,
+                Description = existingProduct.Description,
+                Price = existingProduct.Price,
+                Stock = existingProduct.Stock
+            };
         }
+
         public void RemoveProduct(int ID)
         {
             var product = _productrepo.GetProductById(ID);
