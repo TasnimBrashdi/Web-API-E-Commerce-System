@@ -20,6 +20,13 @@ namespace E_Commerce_System_API
 
             builder.Services.AddScoped<IUserRepo, UserRepo>(); 
             builder.Services.AddScoped<IUserService, UserService>();
+            builder.Services.AddScoped<IProductService, ProductService>();
+            builder.Services.AddScoped<IProductRepo, ProductRepo>();
+            builder.Services.AddScoped<IOrderRepo, OrderRepo>();
+            builder.Services.AddScoped<IOrederService, OrederService>();
+            builder.Services.AddScoped<IReviewRepo, ReviewRepo>();
+            builder.Services.AddScoped<IReviewService, ReviewService>();
+
             builder.Services.AddControllers();
 
 
