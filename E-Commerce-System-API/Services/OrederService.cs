@@ -1,15 +1,17 @@
 ﻿using E_Commerce_System_API.Models;
 using E_Commerce_System_API.Models.DTO;
 using E_Commerce_System_API.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 namespace E_Commerce_System_API.Services
 {
     public class OrederService : IOrederService
     {
         private readonly IOrderRepo _OrderRepository;
-        private readonly IProductService _ProductService;
+        private readonly IProductRepo _ProductService;
 
-        public OrederService(IOrderRepo OrderRepository, IProductService productService)
+
+        public OrederService(IOrderRepo OrderRepository, IProductRepo productService)
         {
             _OrderRepository = OrderRepository;
             _ProductService = productService;
@@ -37,22 +39,36 @@ namespace E_Commerce_System_API.Services
             foreach (var orderProduct in order.OrderProduct)
             {
                 var product = _ProductService.GetProductById(orderProduct.ProductId);
-                var updatedProductDto = new ProductInputDTO
-                {
-                    Name = product.Name,
-                    Description = product.Description,
-                    Price = product.Price,
-                    Stock = product.Stock - orderProduct.Quantity
-                };
+                product.Stock -= orderProduct.Quantity;
 
-                _ProductService.UpdateProduct(product.PId, updatedProductDto);
+
+
+                _ProductService.UpdateProduct( product);
+
             }
+
 
             // Save the order
             _OrderRepository.AddOrder(order);
             return true; // Order successfully placed
         }
+        // Get all orders for a specific user
+        public List<Order> GetOrdersByUserId(int userId)
+        {
+            return _OrderRepository.GetAllOrder().Where(o => o.UId == userId).ToList();
+        }
 
+        // Get order details by ID and user ID
+        public Order GetOrderByIdAndUser(int id, int userId)
+        {
+            var order = _OrderRepository.GetOrderById(id);
+            if (order != null && order.UId == userId)
+            {
+                return order;
+            }
+
+            return null; // Either order doesn't exist or access denied
+        }
 
         public List<Order> GetAllOrders()
         {
@@ -67,6 +83,11 @@ namespace E_Commerce_System_API.Services
         public void DeleteOrder(int id)
         {
             _OrderRepository.DeleteOrder(id);
+        }
+        // Method to check if the user has purchased a product
+        public bool HasUserPurchasedProduct(int userId, int productId)
+        {
+            return _OrderRepository.HasUserPurchasedProduct(userId, productId);
         }
     }
 }
