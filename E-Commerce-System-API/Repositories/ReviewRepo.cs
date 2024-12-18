@@ -1,4 +1,5 @@
 ﻿using E_Commerce_System_API.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace E_Commerce_System_API.Repositories
 {
@@ -16,11 +17,10 @@ namespace E_Commerce_System_API.Repositories
             _context.Reviews.Add(review);
             _context.SaveChanges();
         }
-        //Get list of review 
-        public List<Review> GetAllReview()
+        //Get list of review product
+        public IEnumerable<Review> GetReviewsByProductId(int productId)
         {
-            return _context.Reviews.ToList();
-
+            return _context.Reviews.Include(r => r.User).Where(r => r.ProductId == productId).ToList();
         }
         // Get review by ID
         public Review GetReviewById(int id)
