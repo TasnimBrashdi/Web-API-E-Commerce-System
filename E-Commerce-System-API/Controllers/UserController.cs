@@ -1,8 +1,9 @@
-﻿using E_Commerce_System_API.Models;
+﻿using E_Commerce_System_API.Models.DTO;
 using E_Commerce_System_API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -46,7 +47,7 @@ namespace E_Commerce_System_API.Controllers
 
             if (user != null)
             {
-                string token = GenerateJwtToken(user.UId.ToString(), user.Name);
+                string token = GenerateJwtToken(user.UId.ToString(), user.Name,user.Role);
                 return Ok(token);
 
             }
@@ -56,7 +57,7 @@ namespace E_Commerce_System_API.Controllers
             }
         }
         [NonAction]
-        public string GenerateJwtToken(string userId, string username)
+        public string GenerateJwtToken(string userId, string username,string role)
         {
             var jwtSettings = _configuration.GetSection("JwtSettings");
             var secretKey = jwtSettings["SecretKey"];
@@ -65,7 +66,10 @@ namespace E_Commerce_System_API.Controllers
             {
         new Claim(JwtRegisteredClaimNames.Sub, userId),
         new Claim(JwtRegisteredClaimNames.UniqueName, username),
-        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+           new Claim(ClaimTypes.Role, role), // Adding the role claim
+           new Claim(ClaimTypes.NameIdentifier, userId)
+
     };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
@@ -84,11 +88,25 @@ namespace E_Commerce_System_API.Controllers
         {
             try
             {
+                // Get user ID from token
+                var userIdFromToken = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (userIdFromToken == null)
+                {
+                    return Unauthorized("User ID not found in the token.");
+                }
+                // Fetch user details by the provided ID
                 var user = _userService.GetById(id);
+
+             
+                if (user == null)
+                {
+                    return NotFound($"User with ID {id} not found.");
+                }
+
                 return Ok(user);
             }
             catch (Exception ex)
-            {
+            {// Log the error and return a meaningful message
                 return BadRequest(ex.Message);
             }
         }
