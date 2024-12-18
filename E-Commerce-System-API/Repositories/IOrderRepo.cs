@@ -8,5 +8,6 @@ namespace E_Commerce_System_API.Repositories
         void DeleteOrder(int id);
         List<Order> GetAllOrder();
         Order GetOrderById(int id);
+        bool HasUserPurchasedProduct(int userId, int productId);
     }
 }

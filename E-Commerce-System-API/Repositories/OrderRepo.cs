@@ -37,6 +37,15 @@ namespace E_Commerce_System_API.Repositories
                 _context.SaveChanges();
             }
         }
+        public bool HasUserPurchasedProduct(int userId, int productId)
+        {
+            // Query to check if the user has purchased the product in any order
+            return _context.Orders
+                .Any(order => order.UId == userId && order.OrderProduct.Any(od => od.ProductId == productId));
+        }
+
+
+
 
     }
 }
