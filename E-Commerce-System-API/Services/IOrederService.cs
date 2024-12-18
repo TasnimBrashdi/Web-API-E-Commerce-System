@@ -9,7 +9,7 @@ namespace E_Commerce_System_API.Services
         Order GetOrderById(int id);
         Order GetOrderByIdAndUser(int id, int userId);
         List<Order> GetOrdersByUserId(int userId);
-        bool PlaceOrder(Order order);
+        bool PlaceOrder(int userId, List<(int ProductId, int Quantity)> products);
         bool HasUserPurchasedProduct(int userId, int productId);
     }
 }

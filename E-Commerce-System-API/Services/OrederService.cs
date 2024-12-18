@@ -16,20 +16,33 @@ namespace E_Commerce_System_API.Services
             _OrderRepository = OrderRepository;
             _ProductService = productService;
         }
-        public bool PlaceOrder(Order order)
-        {
-            // Validate stock availability
-            foreach (var orderProduct in order.OrderProduct)
+        public bool PlaceOrder(int userId, List<(int ProductId, int Quantity)> products)
+        {// Create a new order
+            var order = new Order
             {
-                var product = _ProductService.GetProductById(orderProduct.ProductId);
-                if (product == null || product.Stock < orderProduct.Quantity)
-                {
-                    return false; // Insufficient stock
-                }
-            }
+                UId = userId,
+                OrderDate = DateTime.UtcNow,
+                OrderProduct = new List<OrderProducts>()
+            };
+            // Add products to the order,Validate stock availability
+            foreach (var productInput in products)
+            {
+                var product = _ProductService.GetProductById(productInput.ProductId);
 
-            // Calculate total amount
-            order.TotalAmount = order.OrderProduct.Sum(op =>
+                if (product == null || product.Stock < productInput.Quantity)
+                {
+                    return false; // Insufficient stock or invalid product
+                }
+                // Add product to order
+                order.OrderProduct.Add(new OrderProducts
+                {
+                    ProductId = product.PId,
+                    Quantity = productInput.Quantity
+                });
+
+            }
+                // Calculate total amount
+                order.TotalAmount = order.OrderProduct.Sum(op =>
             {
                 var product = _ProductService.GetProductById(op.ProductId);
                 return product.Price * op.Quantity;
