@@ -17,10 +17,17 @@ namespace E_Commerce_System_API.Repositories
             _context.Reviews.Add(review);
             _context.SaveChanges();
         }
-        //Get list of review product
+        //Get list of review 
+        public List<Review> GetAllReview()
+        {
+            return _context.Reviews.ToList();
+
+        }
+        //Get review by products id 
         public IEnumerable<Review> GetReviewsByProductId(int productId)
         {
-            return _context.Reviews.Include(r => r.User).Where(r => r.ProductId == productId).ToList();
+            return _context.Reviews.Include(r => r.User).Where(r => r.ProductId == productId)
+         .ToList();
         }
         // Get review by ID
         public Review GetReviewById(int id)

@@ -6,7 +6,8 @@ namespace E_Commerce_System_API.Repositories
     {
         void AddReview(Review review);
         void DeleteReview(int id);
-        IEnumerable<Review> GetReviewsByProductId(int productId)
+        IEnumerable<Review> GetReviewsByProductId(int productId);
+        List<Review> GetAllReview();
         Review GetReviewById(int id);
         void UpdateReview(Review updatedReview);
     }
