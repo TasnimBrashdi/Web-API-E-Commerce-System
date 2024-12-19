@@ -1,7 +1,9 @@
 ﻿using E_Commerce_System_API.Models;
+using E_Commerce_System_API.Models.DTO;
 using E_Commerce_System_API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace E_Commerce_System_API.Controllers
 {
@@ -12,30 +14,55 @@ namespace E_Commerce_System_API.Controllers
     {
         private readonly IOrederService _orderService;
         private readonly IUserService _userService; // To get user-specific data
+        private readonly ILogger<OrderController> _logger;
 
-        public OrderController(IOrederService orderService, IUserService userService)
+        public OrderController(IOrederService orderService, IUserService userService, ILogger<OrderController> logge)
         {
             _orderService = orderService;
             _userService = userService;
+            _logger = logge;
         }
+
 
         // Place a new order
         [HttpPost("place-order")]
-        public IActionResult PlaceOrder([FromBody] Order order)
+        public IActionResult PlaceOrder([FromBody] PlaceOrderDto order)
         {
-            var userId = _userService.GetCurrentUserId(User); // Fetch authenticated user ID
-            order.UId = userId;
+            try {
+                var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Fetch authenticated user ID
+                                                                               // Ensure the userId is a valid integer
+                if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int userId))
+                {
+                    return Unauthorized(new { message = "Invalid user ID in token." });
+                }
+                // Call the service to place the order                                                  // Call the service to place the order                                                        // Check for invalid data (ModelState, order object, or products list)
+                if (!ModelState.IsValid || order == null || order.Products == null || !order.Products.Any())
+                {
+                    return BadRequest(new { message = "Invalid order data." });
+                }
 
-            if (_orderService.PlaceOrder(order))
-            {
-                return Ok(new { message = "Order placed successfully." });
+                
+                // Call the service to place the order
+                var isOrderPlaced = _orderService.PlaceOrder(userId, order.Products.Select(p =>
+                    (p.ProductId, p.Quantity)).ToList());
+
+                if (isOrderPlaced)
+                {
+         
+                    return Ok(new { message = "Order placed successfully." });
+                }
+                // If order placement fails
+                return BadRequest(new { message = "Failed to place order. Insufficient stock or invalid products." });
             }
-
-            return BadRequest(new { message = "Failed to place order. Insufficient stock." });
+            catch (Exception ex)
+            {
+               
+                return StatusCode(500, new { message = "An unexpected error occurred." });
+            }
         }
 
-        // Get all orders for an authenticated user
-        [HttpGet]
+            // Get all orders for an authenticated user
+        [HttpGet("GetUserOrder")]
         public IActionResult GetUserOrders()
         {
             var userId = _userService.GetCurrentUserId(User); // Fetch authenticated user ID
@@ -45,18 +72,22 @@ namespace E_Commerce_System_API.Controllers
         }
 
         // Get order details by ID for an authenticated user
-        [HttpGet("{id}")]
+        [HttpGet("Get{id}")]
         public IActionResult GetOrderById(int id)
         {
-            var userId = _userService.GetCurrentUserId(User); // Fetch authenticated user ID
-            var order = _orderService.GetOrderByIdAndUser(id, userId);
-
-            if (order == null)
+            try
             {
-                return NotFound(new { message = "Order not found or access denied." });
-            }
+                var userId = _userService.GetCurrentUserId(User); // Fetch authenticated user ID
+                var order = _orderService.GetOrderByIdAndUser(id, userId);
 
-            return Ok(order);
+                _logger.LogInformation("Fetched orders for user {UserId}.", userId);
+                return Ok(new { success = true, order });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while fetching orders for user {UserId}.", _userService.GetCurrentUserId(User));
+                return StatusCode(500, new { success = false, message = "An unexpected error occurred." });
+            }
         }
     }
 
