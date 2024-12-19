@@ -1,4 +1,5 @@
 ﻿using E_Commerce_System_API.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace E_Commerce_System_API.Repositories
 {
@@ -22,10 +23,14 @@ namespace E_Commerce_System_API.Repositories
             return _context.Orders.ToList();
 
         }
+        public List<Order> GetOrdersByUserId(int userId)
+        {
+            return _context.Orders.Include(o => o.OrderProduct).Where(o => o.UId == userId).ToList();
+        }
         // Get order by ID
         public Order GetOrderById(int id)
         {
-            return _context.Orders.FirstOrDefault(p => p.Id == id);
+            return _context.Orders.Include(o => o.OrderProduct).FirstOrDefault(p => p.Id == id);
         }
         //delete order
         public void DeleteOrder(int id)

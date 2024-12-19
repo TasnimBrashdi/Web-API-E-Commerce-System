@@ -14,13 +14,13 @@ namespace E_Commerce_System_API.Controllers
     {
         private readonly IOrederService _orderService;
         private readonly IUserService _userService; // To get user-specific data
-        private readonly ILogger<OrderController> _logger;
+       
 
-        public OrderController(IOrederService orderService, IUserService userService, ILogger<OrderController> logge)
+        public OrderController(IOrederService orderService, IUserService userService)
         {
             _orderService = orderService;
             _userService = userService;
-            _logger = logge;
+          
         }
 
 
@@ -82,6 +82,15 @@ namespace E_Commerce_System_API.Controllers
             // Fetch orders by user ID
             var orders = _orderService.GetOrdersByUserId(userId);
 
+            // Map to PlaceOrderDto for consistent output format
+            var orderDtos = orders.Select(o => new PlaceOrderDto
+            {
+                Products = o.OrderProduct.Select(op => new OrderProductDto
+                {
+                    ProductId = op.ProductId,
+                    Quantity = op.Quantity
+                }).ToList()
+             }).ToList();
             return Ok(orders);
         } 
 
@@ -90,9 +99,10 @@ namespace E_Commerce_System_API.Controllers
         public IActionResult GetOrderById(int id)
         {
             try
-            { // Fetch authenticated user ID directly from the claims
+            { 
+                // Fetch authenticated user ID directly from the claims
                 var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                //var userId = _userService.GetCurrentUserId(User); 
+            
                 if (string.IsNullOrEmpty(userIdString))
                 {
                     return Unauthorized(new { message = "User ID not found in token." });
@@ -111,7 +121,7 @@ namespace E_Commerce_System_API.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An error occurred while fetching orders for user {UserId}.", _userService.GetCurrentUserId(User));
+                
                 return StatusCode(500, new { success = false, message = "An unexpected error occurred." });
             }
         }
