@@ -44,7 +44,7 @@ namespace E_Commerce_System_API.Controllers
 
         // Update an existing review
         [HttpPut("{reviewId}")]
-        public IActionResult UpdateReview(int reviewId, [FromBody] Review review)
+        public IActionResult UpdateReview(int reviewId, [FromBody] ReviewInput review)
         {
             if (review == null || review.Id != reviewId)
             {

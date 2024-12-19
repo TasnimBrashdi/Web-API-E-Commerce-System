@@ -48,7 +48,7 @@ namespace E_Commerce_System_API.Services
 
 
         // Add a new review
-        public void AddReview(ReviewInput review, int productId)
+        public ReviewInput AddReview(ReviewInput review, int productId)
         {
             int userId = GetCurrentUserId();
 
@@ -80,20 +80,38 @@ namespace E_Commerce_System_API.Services
 
             //Recalculate product overall rating
             calculateProductRating(productId);
+            // Return the created review as DTO, including the new ID
+            return new ReviewInput
+            {
+                Id = review.Id,
+                ProductId = review.ProductId,
+                Rating = review.Rating,
+                Comment = review.Comment
+            };
         }
 
 
         // Update an existing review (only by the creator)
-        public void UpdateReview(Review updatedReview)
+        public ReviewInput UpdateReview(ReviewInput updatedReview)
         {
+            if (!updatedReview.Id.HasValue)
+            {
+                throw new ArgumentException("Review ID is required for updating a review.");
+            }
             int userId = GetCurrentUserId();
-            var existingReview = _reviewRepo.GetReviewById(updatedReview.Id);
+            // Fetch the existing review
+            var existingReview = _reviewRepo.GetReviewById(updatedReview.Id.Value);
 
-            if (existingReview == null || existingReview.UId != userId)
+            if (existingReview == null)
+            {
+                throw new KeyNotFoundException("The review does not exist.");
+            }
+            if (existingReview.UId != userId)
             {
                 throw new UnauthorizedAccessException("You can only update your own reviews.");
             }
 
+            // Update the review
             existingReview.Rating = updatedReview.Rating;
             existingReview.Comment = updatedReview.Comment;
             existingReview.ReviewDate = DateTime.UtcNow;
@@ -102,6 +120,14 @@ namespace E_Commerce_System_API.Services
 
             // Recalculate product overall rating
             calculateProductRating(existingReview.ProductId);
+            // Return the updated review as DTO
+            return new ReviewInput
+            {
+                Id = existingReview.Id,
+                ProductId = existingReview.ProductId,
+                Rating = existingReview.Rating,
+                Comment = existingReview.Comment
+            };
         }
 
         // Delete a review (only by the creator)
