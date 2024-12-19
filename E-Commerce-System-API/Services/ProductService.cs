@@ -1,4 +1,5 @@
 ﻿using E_Commerce_System_API.Models;
+using E_Commerce_System_API.Models.DTO;
 using E_Commerce_System_API.Repositories;
 using Microsoft.AspNetCore.Components.Forms;
 
@@ -36,14 +37,14 @@ namespace E_Commerce_System_API.Services
 
             };
         }
-        public ProductOutputDTO UpdateProduct(int id, ProductInputDTO inputDto)
+        public ProductOutputDTO UpdateProducts(int id, ProductInputDTO inputDto)
         {
             var existingProduct = _productrepo.GetProductById(id);
             if (existingProduct == null)
             {
                 throw new KeyNotFoundException("Product not found.");
             }
-
+            // Update product fields
             existingProduct.Name = inputDto.Name;
             existingProduct.Description = inputDto.Description;
             existingProduct.Price = inputDto.Price;
@@ -81,8 +82,8 @@ namespace E_Commerce_System_API.Services
         {
             var product = _productrepo.GetProductById(id);
             if (product == null)
-            {
-                throw new Exception("Product not found.");
+            {//crash
+                throw new KeyNotFoundException($"Product with id {id} not found.");
             }
 
             return product;
@@ -92,6 +93,22 @@ namespace E_Commerce_System_API.Services
         {
             return _productrepo.GetProductsByName(name);
         }
+
+        public List<ProductOutputDTO> GetProducts(string name, decimal? minPrice, decimal? maxPrice, int pageNumber, int pageSize)
+        {
+            var products = _productrepo.GetProducts(name, minPrice, maxPrice, pageNumber, pageSize);
+
+            // Map products to DTOs
+            return products.Select(p => new ProductOutputDTO
+            {
+              
+                Name = p.Name,
+                Description = p.Description, 
+                Price = p.Price,
+                Stock = p.Stock
+            }).ToList();
+        }
+       
 
 
     }

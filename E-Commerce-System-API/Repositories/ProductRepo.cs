@@ -41,16 +41,17 @@ namespace E_Commerce_System_API.Repositories
         public void UpdateProduct(Product updatedProduct)
         {
             var existingProduct = _context.Products.FirstOrDefault(p => p.PId == updatedProduct.PId);
-            if (existingProduct != null)
+            if (existingProduct == null)
             {
-                existingProduct.Name = updatedProduct.Name;
-                existingProduct.Description = updatedProduct.Description;
-                existingProduct.Price = updatedProduct.Price;
-                existingProduct.Stock = updatedProduct.Stock;
+                throw new KeyNotFoundException("Product not found.");
 
 
-                _context.SaveChanges();
             }
+            existingProduct.Name = updatedProduct.Name;
+            existingProduct.Description = updatedProduct.Description;
+            existingProduct.Price = updatedProduct.Price;
+            existingProduct.Stock = updatedProduct.Stock;
+            _context.SaveChanges();
         }
 
         // Delete a product
