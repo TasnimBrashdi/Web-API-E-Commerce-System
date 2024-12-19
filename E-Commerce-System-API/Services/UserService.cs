@@ -1,8 +1,10 @@
 ﻿using E_Commerce_System_API.Models;
+using E_Commerce_System_API.Models.DTO;
 using E_Commerce_System_API.Repositories;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using static E_Commerce_System_API.Models.UserInput;
+using static E_Commerce_System_API.Models.DTO.UserInput;
 
 namespace E_Commerce_System_API.Services
 {
@@ -113,6 +115,32 @@ namespace E_Commerce_System_API.Services
             _userrepo.Delete(id);
 
 
+        }
+        public int GetCurrentUserId(ClaimsPrincipal user)
+        {
+            if (user == null || !user.Identity.IsAuthenticated)
+            {
+                throw new UnauthorizedAccessException("User is not authenticated.");
+            }
+            // Debugging: Inspect available claims
+            foreach (var claim in user.Claims)
+            {
+                Console.WriteLine($"Claim Type: {claim.Type}, Claim Value: {claim.Value}");
+            }
+            // Assuming the user ID is stored as a claim named "id"
+            var userIdClaim = user.Claims.FirstOrDefault(c => c.Type == "id" || c.Type == "user_id" || c.Type == "sub");
+            if (userIdClaim == null)
+            {
+                var availableClaims = string.Join(", ", user.Claims.Select(c => $"{c.Type} ({c.Value})"));
+                throw new KeyNotFoundException($"User ID claim not found. Available claims: {availableClaims}");
+            }
+
+            if (int.TryParse(userIdClaim.Value, out int userId))
+            {
+                return userId;
+            }
+
+            throw new FormatException("Invalid User ID format.");
         }
     }
 }

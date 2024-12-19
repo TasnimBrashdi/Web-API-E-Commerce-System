@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.Security.Claims;
 using System.Text;
 
 namespace E_Commerce_System_API
@@ -26,6 +27,8 @@ namespace E_Commerce_System_API
             builder.Services.AddScoped<IOrederService, OrederService>();
             builder.Services.AddScoped<IReviewRepo, ReviewRepo>();
             builder.Services.AddScoped<IReviewService, ReviewService>();
+            builder.Services.AddHttpContextAccessor();
+
 
             builder.Services.AddControllers();
 
@@ -48,6 +51,19 @@ namespace E_Commerce_System_API
                     ValidateLifetime = true, // Ensures the token hasn't expired.
                     ValidateIssuerSigningKey = true, // Ensures the token is properly signed.
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)) // Match with your token generation key.
+                }; options.Events = new JwtBearerEvents
+                {
+                    OnTokenValidated = context =>
+                    {
+                        // Example: Map "sub" to "id"
+                        var identity = (ClaimsIdentity)context.Principal.Identity;
+                        var subClaim = identity.FindFirst("sub");
+                        if (subClaim != null)
+                        {
+                            identity.AddClaim(new Claim("id", subClaim.Value));
+                        }
+                        return Task.CompletedTask;
+                    }
                 };
             });
 
@@ -78,8 +94,8 @@ namespace E_Commerce_System_API
                 }
             },
             new string[] {}
-        }
-    });
+                             }
+                    });
             });
 
             var app = builder.Build();

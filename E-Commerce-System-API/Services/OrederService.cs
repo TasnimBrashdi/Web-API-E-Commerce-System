@@ -68,7 +68,7 @@ namespace E_Commerce_System_API.Services
         // Get all orders for a specific user
         public List<Order> GetOrdersByUserId(int userId)
         {
-            return _OrderRepository.GetAllOrder().Where(o => o.UId == userId).ToList();
+            return _OrderRepository.GetOrdersByUserId(userId).ToList();
         }
 
         // Get order details by ID and user ID

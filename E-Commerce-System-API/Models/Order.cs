@@ -9,14 +9,15 @@ namespace E_Commerce_System_API.Models
         [Key]
         public int Id { get; set; }
         [ForeignKey("User")]
+        [JsonIgnore]
         public int UId { get; set; }
         [JsonIgnore]
         public virtual User User { get; set; }
 
         public DateTime OrderDate { get; set; } = DateTime.UtcNow;
-
+        [JsonIgnore]
         public decimal TotalAmount { get; set; }
-
+     
         public ICollection<OrderProducts> OrderProduct { get; set; } = new List<OrderProducts>();
 
 
