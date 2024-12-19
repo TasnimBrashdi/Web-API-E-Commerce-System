@@ -65,11 +65,25 @@ namespace E_Commerce_System_API.Controllers
         [HttpGet("GetUserOrder")]
         public IActionResult GetUserOrders()
         {
-            var userId = _userService.GetCurrentUserId(User); // Fetch authenticated user ID
+            // Fetch authenticated user ID directly from the claims
+            var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userIdString))
+            {
+                return Unauthorized(new { message = "User ID not found in token." });
+            }
+
+            // Attempt to parse the userId to an integer
+            if (!int.TryParse(userIdString, out int userId))
+            {
+                return BadRequest(new { message = "Invalid User ID format." });
+            }
+
+            // Fetch orders by user ID
             var orders = _orderService.GetOrdersByUserId(userId);
 
             return Ok(orders);
-        }
+        } 
 
         // Get order details by ID for an authenticated user
         [HttpGet("Get{id}")]
