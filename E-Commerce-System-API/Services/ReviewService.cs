@@ -1,10 +1,13 @@
 ﻿using E_Commerce_System_API.Models;
+using E_Commerce_System_API.Models.DTO;
 using E_Commerce_System_API.Repositories;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using static System.Reflection.Metadata.BlobBuilder;
 
 namespace E_Commerce_System_API.Services
 {
-    public class ReviewService 
+    public class ReviewService : IReviewService
     {
         private readonly IReviewRepo _reviewRepo;
         private readonly IOrederService _orderservice;
@@ -45,12 +48,12 @@ namespace E_Commerce_System_API.Services
 
 
         // Add a new review
-        public void AddReview(Review review, int productId)
+        public void AddReview(ReviewInput review, int productId)
         {
             int userId = GetCurrentUserId();
 
             // Check if the user has purchased the product
-            bool hasPurchased = _orderservice.HasUserPurchasedProduct(userId,productId);
+            bool hasPurchased = _orderservice.HasUserPurchasedProduct(userId, productId);
             if (!hasPurchased)
             {
                 throw new UnauthorizedAccessException("You can only review products you have purchased.");
@@ -64,16 +67,21 @@ namespace E_Commerce_System_API.Services
                 throw new InvalidOperationException("You have already reviewed this product.");
             }
 
-            review.UId = userId;
-            review.ProductId = productId;
-            review.ReviewDate = DateTime.UtcNow;
-
-            _reviewRepo.AddReview(review);
+            // Map DTO to Review entity
+            var reviews = new Review
+            {
+                UId = userId,
+                ProductId = review.ProductId,
+                Rating = review.Rating,
+                Comment = review.Comment,
+                ReviewDate = DateTime.UtcNow
+            };
+            _reviewRepo.AddReview(reviews);
 
             //Recalculate product overall rating
             calculateProductRating(productId);
         }
-   
+
 
         // Update an existing review (only by the creator)
         public void UpdateReview(Review updatedReview)
@@ -111,6 +119,15 @@ namespace E_Commerce_System_API.Services
 
             // Recalculate product overall rating
             calculateProductRating(existingReview.ProductId);
+        }
+        public List<Review> GetReviewsByIdProducts(int productId)
+        {
+            var review = _reviewRepo.GetReviewsByProductId(productId).ToList();
+            if (review == null)
+            {
+                throw new InvalidOperationException("No books found.");
+            }
+            return review;
         }
 
     }
