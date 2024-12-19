@@ -1,4 +1,4 @@
-﻿using E_Commerce_System_API.Models;
+﻿using E_Commerce_System_API.Models.DTO;
 using E_Commerce_System_API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -36,7 +36,7 @@ namespace E_Commerce_System_API.Controllers
         [Authorize(Roles ="admin")]//Allow only admin to add product 
         public IActionResult AddProduct([FromQuery] ProductInputDTO inputDto)
         {
-            //hecks if the data received in the HTTP request is valid
+            //checks if the data received in the HTTP request is valid
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -45,7 +45,7 @@ namespace E_Commerce_System_API.Controllers
             var result = _productService.AddProduct(inputDto);
             return CreatedAtAction(nameof(GetProductById), new { id = result.Name }, result);
         }
-        [HttpGet("products")]
+        [HttpGet("GetProductsPaginationFiltering")]
         public IActionResult GetProducts( [FromQuery] string? name,[FromQuery] decimal? minPrice,[FromQuery] decimal? maxPrice,[FromQuery] int pageNumber = 1,
              [FromQuery] int pageSize = 10)
         {
@@ -61,6 +61,7 @@ namespace E_Commerce_System_API.Controllers
         [HttpGet("{id}")]
         public IActionResult GetProductById(int id)
         {
+
             try
             {
                 var product = _productService.GetProductById(id);
@@ -68,8 +69,11 @@ namespace E_Commerce_System_API.Controllers
             }
             catch (KeyNotFoundException ex)
             {
-                return NotFound(new { Message = ex.Message });
+                // Return a NotFound response with a detailed message
+                return NotFound(new { Message = ex.Message, ProductId = id });
             }
+
+
         }
         [HttpPut("{id}")]
         [Authorize(Roles = "admin")]//Allow only admin to update product 
@@ -83,7 +87,7 @@ namespace E_Commerce_System_API.Controllers
             try
             {
                 // Call the service layer to update the product
-                var updatedProduct = _productService.UpdateProduct(id, inputDto);
+                var updatedProduct = _productService.UpdateProducts(id, inputDto);
                 return Ok(updatedProduct); // Return the updated product
             }
             catch (KeyNotFoundException ex)
@@ -97,6 +101,7 @@ namespace E_Commerce_System_API.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "admin")]//Allow only admin to Delete product 
         public IActionResult DeleteProduct(int id)
         {
             try
