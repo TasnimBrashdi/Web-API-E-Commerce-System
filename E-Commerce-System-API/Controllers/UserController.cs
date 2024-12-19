@@ -17,10 +17,12 @@ namespace E_Commerce_System_API.Controllers
     {
         private readonly IUserService _userService;
         private readonly IConfiguration _configuration;
-        public UserController(IUserService userService, IConfiguration configuration)
+        private readonly ILogger<UserController> _logger;
+        public UserController(IUserService userService, IConfiguration configuration, ILogger<UserController> logger)
         {
             _userService = userService;
             _configuration = configuration;
+            _logger = logger;
         }
         [AllowAnonymous]
         [HttpPost]
@@ -42,19 +44,32 @@ namespace E_Commerce_System_API.Controllers
         [HttpGet("LogInUser")]
         public IActionResult loginUser(string email, string password)
         {
-
-            var user = _userService.Login(email, password);
-
-            if (user != null)
+            try
             {
-                string token = GenerateJwtToken(user.UId.ToString(), user.Name,user.Role);
-                return Ok(token);
+                var user = _userService.Login(email, password);
 
+                if (user != null)
+                {
+                    string token = GenerateJwtToken(user.UId.ToString(), user.Name, user.Role);
+                    var response = new
+                    {
+                        Token = token,
+                        ExpiresIn = 3600 // Token expiration in seconds
+                    };
+                    return Ok(token);
+
+                }
+                else
+                {
+                    return BadRequest("Invalid Credentials");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                return BadRequest("Invalid Credentials");
+                _logger.LogError(ex, "Error occurred while logging in user.");
+                return StatusCode(500, "An error occurred while processing your request.");
             }
+
         }
         [NonAction]
         public string GenerateJwtToken(string userId, string username,string role)
@@ -83,6 +98,7 @@ namespace E_Commerce_System_API.Controllers
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+        [Authorize(Roles = "admin")]//Allow only admin  
         [HttpGet("GetUserById")]
         public IActionResult GetUserById(int id)
         {
@@ -130,6 +146,7 @@ namespace E_Commerce_System_API.Controllers
                 return BadRequest(ex.Message);
             }
         }
+        [Authorize(Roles = "admin")]//Allow only admin to Delete  
         [HttpDelete("{id}")]
         public IActionResult DeleteAdmin(int id)
         {
