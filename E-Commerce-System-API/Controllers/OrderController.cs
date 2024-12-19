@@ -90,11 +90,23 @@ namespace E_Commerce_System_API.Controllers
         public IActionResult GetOrderById(int id)
         {
             try
-            {
-                var userId = _userService.GetCurrentUserId(User); // Fetch authenticated user ID
+            { // Fetch authenticated user ID directly from the claims
+                var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                //var userId = _userService.GetCurrentUserId(User); 
+                if (string.IsNullOrEmpty(userIdString))
+                {
+                    return Unauthorized(new { message = "User ID not found in token." });
+                }
+
+                // Attempt to parse the userId to an integer
+                if (!int.TryParse(userIdString, out int userId))
+                {
+                    return BadRequest(new { message = "Invalid User ID format." });
+                }
+
                 var order = _orderService.GetOrderByIdAndUser(id, userId);
 
-                _logger.LogInformation("Fetched orders for user {UserId}.", userId);
+          
                 return Ok(new { success = true, order });
             }
             catch (Exception ex)
